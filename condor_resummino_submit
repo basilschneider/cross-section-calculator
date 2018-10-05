@@ -33,8 +33,8 @@ usage(){
     echo "where [options] can be"
     echo "  -h               Show this help"
     echo "  -s slha          SLHA to be used (default: ${slha})"
-    echo "  -p n             PDGIDs of particles (default: ${p})"
-    echo "  -m "x y z"       List of mass points (default: ${mass})"
+    echo "  -p \"m n\"         PDGIDs of particles (default: ${p})"
+    echo "  -m \"x y z\"       List of mass points (default: ${mass})"
 }
 
 makeTarball(){
