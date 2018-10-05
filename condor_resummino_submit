@@ -10,7 +10,7 @@ set -u
 set -f
 
 # Default values for user options
-slha=hino
+slha=hino.in
 com=13
 p="1000023 1000024"
 mass="100 200 300"
