@@ -28,8 +28,8 @@ center_of_mass_energy = 13000
 # │ ~g        = 1000021 │                                       │
 # └─────────────────────┴───────────────────────────────────────┘
 #
-particle1 = 77
-particle2 = 88
+particle1 = 1000023
+particle2 = 1000024
 
 # Defines the computation to be performed. Three computations are supported:
 #
