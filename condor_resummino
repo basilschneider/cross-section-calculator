@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+
+# Condor script to calculate cross sections with Resummino
+
+# TODO: Support more particles, currently only N1, N2 and C1 are supported
+# TODO: Support different masses, currently all particles are degenerate
+
+set -e -o pipefail
+
+# Get positional arguments
+slha="${1}"
+p1="${2}"
+p2="${3}"
+m="${4}"
+cluster="${5}"
+process="${6}"
+
+# Output paths
+outfile="${slha%.*}"_"${p1}"_"${p2}"_"${m}".log
+outdir=resummino_c"${cluster}"/"${slha%.*}"_"${p1}"_"${p2}"/
+eosoutdir=/eos/uscms/store/user/bschneid/analysis/resummino/"${outdir}"
+
+# Software on /cvmfs
+# gcc is set up automatically with CMSSW
+#gcc=/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/gcc/6.3.0-cms/
+cmake=/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/cmake/3.7.0-cms/
+lhapdf=/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/lhapdf/6.2.1-cms/
+# gsl version < 2. is needed, which is not available on /cvmfs
+#gsl=/cvmfs/cms.cern.ch/slc6_amd64_gcc630/external/gsl/2.2.1-cms/
+
+pwd="${PWD}"
+
+echo "Hello Condor"
+echo
+
+echo "Date: $(date)"
+echo "Worker node: $(uname -a)"
+echo "Operating system: $(cat /etc/redhat-release)"
+echo "Working directory: ${pwd}"
+echo "SLHA: ${slha}"
+echo "Particle 1: ${p1}"
+echo "Particle 2: ${p2}"
+echo "Mass: ${m}"
+echo "Output file: ${outfile}"
+echo "Output directory: ${outdir}"
+echo "eos output directory: ${eosoutdir}"
+echo "Cluster number: ${cluster}"
+echo "Process number: ${process}"
+echo
+
+# Create output dummy file that can be transferred back
+# HTCondor has a bug, it always needs to transfer at least one file back
+# This can cause it to overwrite stuff, so we just create a dummy file, that
+# happily can be transferred and overwritten
+touch condor_output_dummy
+
+# Unpack tarball
+echo -n "Unpack tarballs... "
+tar xf resummino-2.0.1-looptools.tar.bz2
+tar xf gsl-1.13.tar.gz
+tar xf tarball_resummino.tar.gz
+echo -e "Done.\n"
+
+# Set up CMSSW to access software on /cvmfs
+echo -n "Set up CMSSW to access software on /cvmfs... "
+source /cvmfs/cms.cern.ch/cmsset_default.sh
+export SCRAM_ARCH=slc6_amd64_gcc630
+eval `scramv1 project CMSSW CMSSW_10_0_1`
+pushd CMSSW_10_0_1/src &>/dev/null
+eval $(scram runtime -sh)
+popd &>/dev/null
+export PATH="${cmake}/bin/:${lhapdf}/bin/:${PATH}"
+echo -e "Done.\n"
+
+# Install gsl 1.13
+echo "Install GSL... "
+pushd gsl-1.13 &>/dev/null
+./configure --prefix="${pwd}"/pkg/
+make
+make install
+popd &>/dev/null
+echo -e "Done.\n"
+
+# Install Resummino
+echo "Install Resummino... "
+mkdir resummino-2.0.1/build
+pushd resummino-2.0.1/build &>/dev/null
+cmake ../ \
+    -DLHAPDF="${lhapdf}" \
+    -DGSL_LIBRARY="${pwd}"/pkg/lib/libgsl.so \
+    -DGSL_INCLUDE_DIR="${pwd}"/pkg/include/ \
+    -DGSL_CBLAS_LIBRARY="${pwd}"/pkg/lib/libgslcblas.so \
+    -DCMAKE_INSTALL_PREFIX="${pwd}"/pkg/usr/local/resummino
+make
+make install
+popd &>/dev/null
+# Tell Resummino where to find libraries at runtime
+export LD_LIBRARY_PATH="${pwd}"/pkg/lib/:"${lhapdf}"/lib:"${LD_LIBRARY_PATH}"
+echo -e "Done.\n"
+
+# Modify masses in input file
+echo -n "Modify SLHA file... "
+sed -i \
+    -e "/^ *1000022/c\   1000022    -${m}" \
+    -e "/^ *1000023/c\   1000023     ${m}" \
+    -e "/^ *1000024/c\   1000024     ${m}" "${slha}"
+echo -e "Done.\n"
+
+# Run resummino
+echo "Run Resummino... "
+# Even when Resummino fails, we would still like to see the result. Hence we
+# don't want the shell to immediately exit in case of non-zero return value.
+set +e
+./pkg/usr/local/resummino/bin/resummino resummino.in 2>&1 | tee "${outfile}"
+set -e
+echo -e "Done.\n"
+
+# Copy results to eos
+echo -n "Copy output to eos... "
+mkdir -p "${outdir}"
+mv "${outfile}" "${outdir}"
+xrdfs root://cmseos.fnal.gov/ mkdir -p "${eosoutdir}"
+# Since copying to eos often fails for no obvious reason, brute force the copy
+for i in {1..10}; do
+    if xrdcp -rs "${outdir}" root://cmseos.fnal.gov/"${eosoutdir}"; then
+        break
+    else
+        echo "xrdcp try ${i} for directory ${outdir} failed."
+        if [ "${i}" -eq 10 ]; then
+            echo "Give up."
+            exit 2
+        fi
+    fi
+done
+echo -e "Done.\n"
+
+echo "Bye."

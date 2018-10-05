@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+
+# Submit jobs to HTCondor to calculate different cross sections
+
+# Don't expand unset parameters
+set -u
+
+# Disable pathname expansions, otherwise the user can pass "*" as an option and
+# wreak havoc
+set -f
+
+# Default values for user options
+slha=hino
+p="1000023 1000024"
+mass="100 200 300"
+
+# Error handling
+err=false
+
+# Names
+name_tarball=tarball_resummino.tar.gz
+name_submission_script=condor_resummino_submission
+
+# External tarballs
+resummino=resummino-2.0.1-looptools.tar.bz2
+gsl=gsl-1.13.tar.gz
+
+usage(){
+    echo "Submit jobs to calculate cross sections with Resummino."
+    echo "This will generate one job per mass point."
+    echo
+    echo "Usage: $(basename $0) [options]"
+    echo "where [options] can be"
+    echo "  -h               Show this help"
+    echo "  -s slha          SLHA to be used (default: ${slha})"
+    echo "  -p n             PDGIDs of particles (default: ${p})"
+    echo "  -m "x y z"       List of mass points (default: ${mass})"
+}
+
+makeTarball(){
+    # Delete old tarball
+    rm -f "${name_tarball}"
+
+    # Create new tarball
+    echo -n "Create tarball with input files... "
+    tar czf "${name_tarball}" resummino.in hino.in wino.in
+    if [ $? -ne 0 ]; then
+        echo "Exit"
+        exit 1
+    fi
+    echo "Done."
+}
+
+prepare(){
+    echo -n "Set particles to ${p1} and ${p2} in Resummino config... "
+    sed -i \
+        -e "/^particle1/cparticle1 = ${p1}" \
+        -e "/^particle2/cparticle2 = ${p2}" \
+        resummino.in
+    echo "Done."
+
+    echo -n "Set input SLHA file to ${slha}... "
+    sed -i -e "/^slha/cslha = ${slha}" resummino.in
+    echo "Done."
+}
+
+submit(){
+    echo -n "Set up submission script... "
+    rm -f "${name_submission_script}"
+
+# Fill default values to submission script
+cat << EOF >> "${name_submission_script}"
+universe = vanilla
+Executable = condor_resummino
+Requirements = OpSys == "LINUX" && (Arch != "DUMMY" )
+request_disk = 400000
+request_memory = 1000
+Transfer_Input_Files = condor_resummino, ${name_tarball}, ${resummino}, ${gsl}
+notification = Never
+Should_Transfer_Files = YES
+WhenToTransferOutput = ON_EXIT
+Transfer_Output_Files = condor_output_dummy
+x509userproxy = \$ENV(X509_USER_PROXY)
+Output = logs/condor_\$(Cluster).\$(Process).stdout
+Error = logs/condor_\$(Cluster).\$(Process).stderr
+Log = logs/condor_\$(Cluster).\$(Process).condor
+EOF
+
+    # For every mass point, create a job
+    for m in ${mass}; do
+        echo "Arguments = ${slha} ${p1} ${p2} ${m} \$(Cluster) \$(Process)" >> \
+            "${name_submission_script}"
+        echo "Queue 1" >> "${name_submission_script}"
+    done
+    echo "Done."
+
+    # Submit jobs
+    condor_submit "${name_submission_script}"
+}
+
+parseOptions(){
+
+    OPT=$(getopt \
+        --options hp:s:m: \
+        --name "$0" \
+        -- "$@"
+    )
+
+    if [ $? -ne 0 ]; then
+        err=true
+    fi
+
+    eval set -- "${OPT}"
+
+    while true; do
+        case "${1}" in
+            -h) usage; exit 0;;
+            -s) slha="${2}"; shift 2;;
+            -m) mass="${2}"; shift 2;;
+            -p) p="${2}"; shift 2;;
+            --) shift; break;;
+        esac
+    done
+
+    if [ "${err}" = true ]; then
+        usage
+        exit 1
+    fi
+
+    # Split p into p1 and p2
+    p1="${p% *}"
+    p2="${p#* }"
+    unset p
+
+    makeTarball
+    prepare
+    submit
+}
+
+parseOptions "$@"
