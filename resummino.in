@@ -6,7 +6,7 @@
 
 # Collider parameters.
 collider_type         = proton-proton  # proton-proton or proton-antiproton
-center_of_mass_energy = 13000
+center_of_mass_energy = 279000
 
 # Outgoing particles using the value of the PDG-scheme number.
 # The particles are listed in the table below. A minus in front of the PDG
@@ -28,8 +28,8 @@ center_of_mass_energy = 13000
 # │ ~g        = 1000021 │                                       │
 # └─────────────────────┴───────────────────────────────────────┘
 #
-particle1 = 1000023
-particle2 = 1000024
+particle1 = 77
+particle2 = 99
 
 # Defines the computation to be performed. Three computations are supported:
 #

@@ -9,15 +9,16 @@ set -e -o pipefail
 
 # Get positional arguments
 slha="${1}"
-p1="${2}"
-p2="${3}"
-m="${4}"
-cluster="${5}"
-process="${6}"
+com="${2}"
+p1="${3}"
+p2="${4}"
+m="${5}"
+cluster="${6}"
+process="${7}"
 
 # Output paths
-outfile="${slha%.*}"_"${p1}"_"${p2}"_"${m}".log
-outdir=resummino_c"${cluster}"/"${slha%.*}"_"${p1}"_"${p2}"/
+outfile="${slha%.*}"_"${com}"TeV_"${p1}"_"${p2}"_"${m}".log
+outdir=resummino_c"${cluster}"/"${slha%.*}"_"${com}"TeV_"${p1}"_"${p2}"/
 eosoutdir=/eos/uscms/store/user/bschneid/analysis/resummino/"${outdir}"
 
 # Software on /cvmfs
@@ -38,6 +39,7 @@ echo "Worker node: $(uname -a)"
 echo "Operating system: $(cat /etc/redhat-release)"
 echo "Working directory: ${pwd}"
 echo "SLHA: ${slha}"
+echo "Center of mass energy: ${com}"
 echo "Particle 1: ${p1}"
 echo "Particle 2: ${p2}"
 echo "Mass: ${m}"

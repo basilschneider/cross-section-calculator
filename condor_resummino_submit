@@ -11,6 +11,7 @@ set -f
 
 # Default values for user options
 slha=hino
+com=13
 p="1000023 1000024"
 mass="100 200 300"
 
@@ -33,6 +34,7 @@ usage(){
     echo "where [options] can be"
     echo "  -h               Show this help"
     echo "  -s slha          SLHA to be used (default: ${slha})"
+    echo "  -e n             Center of mass energy in TeV (default: ${com})"
     echo "  -p \"m n\"         PDGIDs of particles (default: ${p})"
     echo "  -m \"x y z\"       List of mass points (default: ${mass})"
 }
@@ -52,6 +54,11 @@ makeTarball(){
 }
 
 prepare(){
+    echo -n "Set center of mass energy to ${com} TeV in Resummino config... "
+    sed -i "/^center_of_mass_energy/ccenter_of_mass_energy = ${com}000" \
+        resummino.in
+    echo "Done."
+
     echo -n "Set particles to ${p1} and ${p2} in Resummino config... "
     sed -i \
         -e "/^particle1/cparticle1 = ${p1}" \
@@ -88,7 +95,7 @@ EOF
 
     # For every mass point, create a job
     for m in ${mass}; do
-        echo "Arguments = ${slha} ${p1} ${p2} ${m} \$(Cluster) \$(Process)" >> \
+        echo "Arguments = ${slha} ${com} ${p1} ${p2} ${m} \$(Cluster) \$(Process)" >> \
             "${name_submission_script}"
         echo "Queue 1" >> "${name_submission_script}"
     done
@@ -101,7 +108,7 @@ EOF
 parseOptions(){
 
     OPT=$(getopt \
-        --options hp:s:m: \
+        --options he:p:s:m: \
         --name "$0" \
         -- "$@"
     )
@@ -116,8 +123,9 @@ parseOptions(){
         case "${1}" in
             -h) usage; exit 0;;
             -s) slha="${2}"; shift 2;;
-            -m) mass="${2}"; shift 2;;
+            -e) com="${2}"; shift 2;;
             -p) p="${2}"; shift 2;;
+            -m) mass="${2}"; shift 2;;
             --) shift; break;;
         esac
     done
