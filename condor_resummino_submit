@@ -69,6 +69,8 @@ prepare(){
     echo -n "Set input SLHA file to ${slha}... "
     sed -i -e "/^slha/cslha = ${slha}" resummino.in
     echo "Done."
+
+    echo "Masses set to ${mass}."
 }
 
 submit(){
