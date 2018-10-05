@@ -20,6 +20,8 @@ process="${7}"
 outfile="${slha%.*}"_"${com}"TeV_"${p1}"_"${p2}"_"${m}".log
 outdir=resummino_c"${cluster}"/"${slha%.*}"_"${com}"TeV_"${p1}"_"${p2}"/
 eosoutdir=/eos/uscms/store/user/bschneid/analysis/resummino/"${outdir}"
+configdir=resummino_c"${cluster}"/
+eosconfigdir=/eos/uscms/store/user/bschneid/analysis/resummino/"${configdir}"
 
 # Software on /cvmfs
 # gcc is set up automatically with CMSSW
@@ -46,6 +48,8 @@ echo "Mass: ${m}"
 echo "Output file: ${outfile}"
 echo "Output directory: ${outdir}"
 echo "eos output directory: ${eosoutdir}"
+echo "Config directory: ${configdir}"
+echo "eos config directory: ${eosconfigdir}"
 echo "Cluster number: ${cluster}"
 echo "Process number: ${process}"
 echo
@@ -108,7 +112,7 @@ sed -i \
     -e "/^ *1000024/c\   1000024     ${m}" "${slha}"
 echo -e "Done.\n"
 
-# Run resummino
+# Run Resummino
 echo "Run Resummino... "
 # Even when Resummino fails, we would still like to see the result. Hence we
 # don't want the shell to immediately exit in case of non-zero return value.
@@ -135,5 +139,23 @@ for i in {1..10}; do
     fi
 done
 echo -e "Done.\n"
+
+# If this is the first job (process == 0), then also copy the config files to
+# eos, for further reference
+if [ "${process}" -eq 0 ]; then
+    echo -n "Copy config files to eos... "
+    for i in {1..10}; do
+        if xrdcp -s resummino.in "${slha}" root://cmseos.fnal.gov/"${eosconfigdir}"; then
+            break
+        else
+            echo "xrdcp try ${i} for Resummino configs failed."
+            if [ "${i}" -eq 10 ]; then
+                echo "Give up."
+                exit 2
+            fi
+        fi
+    done
+    echo -e "Done.\n"
+fi
 
 echo "Bye."
