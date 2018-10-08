@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+
+set -e -o pipefail
+
+# Compile output from Resummino into a Twiki friendly format and produce a plot
+
+# Get input directory from positional argument
+get_inputdir(){
+    # Check that input directory is defined
+    if [ ! -d "${1}" ]; then
+        echo -n "Need path to directory with Resummino logs "
+        echo "as first positional argument."
+        echo "Exit."
+        exit 1
+    fi
+
+    inputdir="${1}"
+
+    # Remove all trailing slashes from inputdir
+    while [[ "${inputdir: -1}" == / ]]; do
+        inputdir="${inputdir%/}"
+    done
+}
+
+# Make sure that you pick up the right cross section
+check_xs_format(){
+    # Compare format up to "(" character with expected format in the log files
+    local xs_log="${1%(*}"
+    local exp_log="${2}"
+    if [[ ! "${xs_log}" == "${exp_log} = " ]]; then
+        echo "Could not determine ${exp_log} cross section."
+        echo "Exit."
+        exit 2
+    fi
+}
+
+# Extract cross section from log file
+get_xs(){
+    echo $(sed 's/^.*(\([^ ]*\).*/\1/' <<< "${1}")
+}
+
+# Extract uncertainty on cross section from log file
+get_err(){
+    echo $(sed 's/^.*+- \([^)]*\).*/\1/' <<< "${1}")
+}
+
+# Main function
+run(){
+
+    get_inputdir "${@}"
+
+    # Retrieve information from directory name
+    dir="${inputdir##*/}"
+    slha="${dir%%_*}"
+    com="${dir#*_}"
+    com="${com%TeV*}"
+    p1="${dir#*_}"
+    p1="${p1#*_}"
+    p2="${p1#*_}"
+    p1="${p1%_*}"
+
+    for log in "${inputdir}"/*; do
+
+        echo "Check log file ${log}."
+
+        # Get cross sections (LO, NLO and NLO+NNLL)
+        # Since sed exits, there is no-one reading the piped output of tac anymore
+        # and tac will return exit code 141 (SIGPIPE); we don't want that to stop
+        # the program, though
+        set +o pipefail
+        lo_log="$(tac "${log}" | sed -n '5{p;q}')"
+        nlo_log="$(tac "${log}" | sed -n '4{p;q}')"
+        nlonnll_log="$(tac "${log}" | sed -n '3{p;q}')"
+        set -o pipefail
+
+        # Check if these are indeed cross sections by comparing to the expected
+        # format from Resummino
+        check_xs_format "${lo_log}" "LO"
+        check_xs_format "${nlo_log}" "NLO"
+        check_xs_format "${nlonnll_log}" "NLO+NLL"
+
+        # Extract cross sections and uncertainties from log entry
+        lo=$(get_xs "${lo_log}")
+        lo_err=$(get_err "${lo_log}")
+        nlo=$(get_xs "${nlo_log}")
+        nlo_err=$(get_err "${nlo_log}")
+        nlonnll=$(get_xs "${nlonnll_log}")
+        nlonnll_err=$(get_err "${nlonnll_log}")
+
+        echo "LO:       ${lo} +/- ${lo_err}"
+        echo "NLO:      ${nlo} +/- ${nlo_err}"
+        echo "NLO+NNLL: ${nlonnll} +/- ${nlonnll_err}"
+
+    done
+}
+
+run "${@}"
