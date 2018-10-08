@@ -4,6 +4,16 @@ set -e -o pipefail
 
 # Compile output from Resummino into a Twiki friendly format and produce a plot
 
+# Use echo to output to stderr
+errcho(){
+    >&2 echo ${@}
+}
+
+# Output to Twiki log file
+twikilog(){
+    echo "${@} " >> "${twikilog}"
+}
+
 # Get input directory from positional argument
 get_inputdir(){
     # Check that input directory is defined
@@ -44,6 +54,43 @@ get_err(){
     echo $(sed 's/^.*+- \([^)]*\).*/\1/' <<< "${1}")
 }
 
+# Return "float" rounded to 4 significant digits
+round_values_4(){
+    local value="${1}"
+    awk '{printf("%.4g\n", 1000*$0)}' <<< "${value}"
+}
+
+# Return "float" rounded to 5 significant digits
+round_values_5(){
+    local value="${1}"
+    awk '{printf("%.5g\n", 1000*$0)}' <<< "${value}"
+}
+
+# Get human readable version of the model
+get_hr_slha(){
+    if [ "${slha}" == wino ]; then
+        slha_hr=Wino
+    elif [ "${slha}" == hino ]; then
+        slha_hr=Higgsino
+    else
+        slha_hr="${slha}"
+    fi
+}
+
+# Get human readable name of the particle, i.e. translate PDGID to particle name
+get_hr_pname(){
+    p="${1}"
+    if [ "${p}" -eq 1000022 ]; then # N1
+        echo "&#967;&#771;<sup>0</sup><sub>1</sub>"
+    elif [ "${p}" -eq 1000023 ]; then # N2
+        echo "&#967;&#771;<sup>0</sup><sub>2</sub>"
+    elif [ "${p}" -eq 1000024 ]; then # C1
+        echo "&#967;&#771;<sup>+</sup><sub>1</sub>"
+    else
+        echo "${p}"
+    fi
+}
+
 # Main function
 run(){
 
@@ -58,10 +105,41 @@ run(){
     p1="${p1#*_}"
     p2="${p1#*_}"
     p1="${p1%_*}"
+    cluster="${inputdir%/*}"
+    cluster="${cluster##*/}"
+    twikilog="${cluster}_${dir}.log"
+
+    # Remove Twiki log file
+    rm -f "${twikilog}"
+
+    # Make variables human readable for the Twiki page
+    get_hr_slha
+    p1_hr=$(get_hr_pname "${p1}")
+    p2_hr=$(get_hr_pname "${p2}")
+
+    # Title for Twiki page
+    twikilog -n "---+++ NLO+NNLL ${slha_hr} cross sections for"
+    twikilog "${p1_hr}${p2_hr} production at sqrt(s) = ${com} !TeV"
+    twikilog
+
+    # Table properties
+    twikilog -n '%TABLE{ tableborder="0" cellpadding="4" cellspacing="3"'
+    twikilog -n 'cellborder="1" headerrows="1" columnwidths="80, 125, 125"'
+    twikilog -n 'headeralign="center" dataalign="right" headercolor="#FFFFFF"'
+    twikilog -n 'headerbg="#437B58" databg="#A1C2B1, #CFDFD5"'
+    twikilog 'datacolor="#000000"}%'
+    twikilog
+
+    # Table header row
+    twikilog -n " | *m<sub>&#967;&#771;</sub> [GeV]* | *&sigma; [fb]*"
+    twikilog " | *uncertainty [fb]* |"
 
     for log in "${inputdir}"/*; do
 
         echo "Check log file ${log}."
+
+        mass="${log##*_}"
+        mass="${mass%.log}"
 
         # Get cross sections (LO, NLO and NLO+NNLL)
         # Since sed exits, there is no-one reading the piped output of tac anymore
@@ -87,9 +165,19 @@ run(){
         nlonnll=$(get_xs "${nlonnll_log}")
         nlonnll_err=$(get_err "${nlonnll_log}")
 
+        # Round values
+        lo=$(round_values_5 "${lo}")
+        lo_err=$(round_values_4 "${lo_err}")
+        nlo=$(round_values_5 "${nlo}")
+        nlo_err=$(round_values_4 "${nlo_err}")
+        nlonnll=$(round_values_5 "${nlonnll}")
+        nlonnll_err=$(round_values_4 "${nlonnll_err}")
+
+        # Output results
         echo "LO:       ${lo} +/- ${lo_err}"
         echo "NLO:      ${nlo} +/- ${nlo_err}"
         echo "NLO+NNLL: ${nlonnll} +/- ${nlonnll_err}"
+        twikilog " | ${mass} | ${nlonnll} | ${nlonnll_err} |"
 
     done
 }
