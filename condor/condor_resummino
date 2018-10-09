@@ -17,8 +17,8 @@ cluster="${6}"
 process="${7}"
 
 # Output paths
-outfile="${slha%.*}"_"${com}"TeV_"${p1}"_"${p2}"_"${m}".log
-outdir=resummino_c"${cluster}"/"${slha%.*}"_"${com}"TeV_"${p1}"_"${p2}"/
+outfile="${slha%.*}"_"${com}"TeV_"${p1/-/m}"_"${p2/-/m}"_"${m}".log
+outdir=resummino_c"${cluster}"/"${slha%.*}"_"${com}"TeV_"${p1/-/m}"_"${p2/-/m}"/
 eosoutdir=/eos/uscms/store/user/bschneid/analysis/resummino/"${outdir}"
 configdir=resummino_c"${cluster}"/
 eosconfigdir=/eos/uscms/store/user/bschneid/analysis/resummino/"${configdir}"

@@ -2,9 +2,6 @@
 
 # Submit jobs to HTCondor to calculate different cross sections
 
-# TODO: Make sure that minus signs for pdg id's are treated correctly. The
-# output directory should reflect the minus sign somehow
-
 # Don't expand unset parameters
 set -u
 
