@@ -14,6 +14,7 @@ set -u
 set -f
 
 # Default values for user options
+dryrun=false
 slha=hino.in
 com=13
 p="1000023 1000024"
@@ -37,6 +38,7 @@ usage(){
     echo "Usage: $(basename $0) [options]"
     echo "where [options] can be"
     echo "  -h               Show this help"
+    echo "  -d               Dryrun, don't submit any jobs"
     echo "  -s slha          SLHA to be used (default: ${slha})"
     echo "  -e n             Center of mass energy in TeV (default: ${com})"
     echo "  -p \"m n\"         PDGIDs of particles (default: ${p})"
@@ -108,13 +110,15 @@ EOF
     echo "Done."
 
     # Submit jobs
-    condor_submit "${name_submission_script}"
+    if [ ! "${dryrun}" == true ]; then
+        condor_submit "${name_submission_script}"
+    fi
 }
 
 parseOptions(){
 
     OPT=$(getopt \
-        --options he:p:s:m: \
+        --options hde:p:s:m: \
         --name "$0" \
         -- "$@"
     )
@@ -128,6 +132,7 @@ parseOptions(){
     while true; do
         case "${1}" in
             -h) usage; exit 0;;
+            -d) dryrun=true; shift;;
             -s) slha="${2}"; shift 2;;
             -e) com="${2}"; shift 2;;
             -p) p="${2}"; shift 2;;
