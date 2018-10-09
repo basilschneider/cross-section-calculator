@@ -4,6 +4,9 @@ set -e -o pipefail
 
 # Compile output from Resummino into a Twiki friendly format and produce a plot
 
+# TODO: Make plot with cross sections
+# TODO: Think about how to combine C1+N2 and C1-N2, but also all hino processes
+
 # Use echo to output to stderr
 errcho(){
     >&2 echo ${@}
