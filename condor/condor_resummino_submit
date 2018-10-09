@@ -164,8 +164,8 @@ parseOptions(){
     p2="${p#* }"
     unset p
 
-    # Make sure p1 <= p2
-    if [ "${p1}" -gt "${p2}" ]; then
+    # Make sure abs(p1) <= abs(p2)
+    if [ "${p1#-}" -gt "${p2#-}" ]; then
         p1temp="${p1}"
         p1="${p2}"
         p2="${p1temp}"
