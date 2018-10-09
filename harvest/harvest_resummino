@@ -108,6 +108,8 @@ run(){
     p1="${p1#*_}"
     p2="${p1#*_}"
     p1="${p1%_*}"
+    p1="${p1/m/-}"
+    p2="${p2/m/-}"
     cluster="${inputdir%/*}"
     cluster="${cluster##*/}"
     twikilog="${cluster}_${dir}.log"
