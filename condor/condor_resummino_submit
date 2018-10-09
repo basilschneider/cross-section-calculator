@@ -2,6 +2,10 @@
 
 # Submit jobs to HTCondor to calculate different cross sections
 
+# TODO: Make sure that minus signs for pdg id's are treated correctly. The
+# output directory should reflect the minus sign somehow
+# TODO: p="x y" and p="y x" should be treated the same
+
 # Don't expand unset parameters
 set -u
 
