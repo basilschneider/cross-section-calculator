@@ -4,7 +4,6 @@
 
 # TODO: Make sure that minus signs for pdg id's are treated correctly. The
 # output directory should reflect the minus sign somehow
-# TODO: p="x y" and p="y x" should be treated the same
 
 # Don't expand unset parameters
 set -u
@@ -150,6 +149,14 @@ parseOptions(){
     p1="${p% *}"
     p2="${p#* }"
     unset p
+
+    # Make sure p1 <= p2
+    if [ "${p1}" -gt "${p2}" ]; then
+        p1temp="${p1}"
+        p1="${p2}"
+        p2="${p1temp}"
+        unset p1temp
+    fi
 
     makeTarball
     prepare
