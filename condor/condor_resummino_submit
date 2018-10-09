@@ -19,6 +19,9 @@ com=13
 p="1000023 1000024"
 mass="100 200 300"
 
+# Accepted particles
+p_good=(1000022 1000023 1000024 -1000024)
+
 # Error handling
 err=false
 
@@ -42,6 +45,17 @@ usage(){
     echo "  -e n             Center of mass energy in TeV (default: ${com})"
     echo "  -p \"m n\"         PDGIDs of particles (default: ${p})"
     echo "  -m \"x y z\"       List of mass points (default: ${mass})"
+}
+
+# Check if array contains element "${1}"
+contains_element () {
+    local match="${1}"
+    local element
+    shift
+    for element; do
+        [ "${element}" == "${match}" ] && return 0
+    done
+    return 1
 }
 
 makeTarball(){
@@ -156,6 +170,14 @@ parseOptions(){
         p1="${p2}"
         p2="${p1temp}"
         unset p1temp
+    fi
+
+    # Make sure particles are accepted
+    if ! contains_element "${p1}" "${p_good[@]}" || \
+       ! contains_element "${p2}" "${p_good[@]}"; then
+        echo "Particle ${p1} or ${p2} is not accepted."
+        echo "Exit."
+        exit 2
     fi
 
     makeTarball
