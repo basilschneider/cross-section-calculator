@@ -89,6 +89,8 @@ get_hr_pname(){
         echo "&#967;&#771;<sup>0</sup><sub>2</sub>"
     elif [ "${p}" -eq 1000024 ]; then # C1
         echo "&#967;&#771;<sup>+</sup><sub>1</sub>"
+    elif [ "${p}" -eq -1000024 ]; then # C1
+        echo "&#967;&#771;<sup>-</sup><sub>1</sub>"
     else
         echo "${p}"
     fi
