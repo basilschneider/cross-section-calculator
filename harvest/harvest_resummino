@@ -96,33 +96,41 @@ get_hr_pname(){
     fi
 }
 
-# Main function
+# Create one log file per positional argument
 run(){
 
     get_inputdir "${1}"
 
     # Retrieve information from directory name
-    dir="${inputdir##*/}"
-    slha="${dir%%_*}"
-    com="${dir#*_}"
+    local dir="${inputdir##*/}"
+    local slha="${dir%%_*}"
+    local com="${dir#*_}"
     com="${com%TeV*}"
-    p1="${dir#*_}"
+    local p1="${dir#*_}"
     p1="${p1#*_}"
-    p2="${p1#*_}"
+    local p2="${p1#*_}"
     p1="${p1%_*}"
     p1="${p1/m/-}"
     p2="${p2/m/-}"
-    cluster="${inputdir%/*}"
+    local cluster="${inputdir%/*}"
     cluster="${cluster##*/}"
-    twikilog="${cluster}_${dir}.log"
+    local twikilog="${cluster}_${dir}.log"
 
     # Remove Twiki log file
     rm -f "${twikilog}"
 
     # Make variables human readable for the Twiki page
     get_hr_slha
-    p1_hr=$(get_hr_pname "${p1}")
-    p2_hr=$(get_hr_pname "${p2}")
+    local p1_hr=$(get_hr_pname "${p1}")
+    local p2_hr=$(get_hr_pname "${p2}")
+
+    # Collect various variables in arrays to access them later again for the
+    # combination of the log files
+    twikilogs+=("${twikilog}")
+    p1_hrs+=("${p1_hr}")
+    p2_hrs+=("${p2_hr}")
+    slha_hrs+=("${slha_hr}")
+    coms+=("${com}")
 
     # Title for Twiki page
     twikilog -n "---+++ NLO+NNLL ${slha_hr} cross sections for"
@@ -145,7 +153,7 @@ run(){
 
         echo "Check log file ${log}."
 
-        mass="${log##*_}"
+        local mass="${log##*_}"
         mass="${mass%.log}"
 
         # Get cross sections (LO, NLO and NLO+NNLL)
@@ -153,9 +161,9 @@ run(){
         # and tac will return exit code 141 (SIGPIPE); we don't want that to stop
         # the program, though, so we turn off pipefail for a moment
         set +o pipefail
-        lo_log="$(tac "${log}" | sed -n '5{p;q}')"
-        nlo_log="$(tac "${log}" | sed -n '4{p;q}')"
-        nlonnll_log="$(tac "${log}" | sed -n '3{p;q}')"
+        local lo_log="$(tac "${log}" | sed -n '5{p;q}')"
+        local nlo_log="$(tac "${log}" | sed -n '4{p;q}')"
+        local nlonnll_log="$(tac "${log}" | sed -n '3{p;q}')"
         set -o pipefail
 
         # Check if these are indeed cross sections by comparing to the expected
@@ -165,12 +173,12 @@ run(){
         check_xs_format "${nlonnll_log}" "NLO+NLL"
 
         # Extract cross sections and uncertainties from log entry
-        lo=$(get_xs "${lo_log}")
-        lo_err=$(get_err "${lo_log}")
-        nlo=$(get_xs "${nlo_log}")
-        nlo_err=$(get_err "${nlo_log}")
-        nlonnll=$(get_xs "${nlonnll_log}")
-        nlonnll_err=$(get_err "${nlonnll_log}")
+        local lo=$(get_xs "${lo_log}")
+        local lo_err=$(get_err "${lo_log}")
+        local nlo=$(get_xs "${nlo_log}")
+        local nlo_err=$(get_err "${nlo_log}")
+        local nlonnll=$(get_xs "${nlonnll_log}")
+        local nlonnll_err=$(get_err "${nlonnll_log}")
 
         # Round values
         lo=$(round_values_5 "${lo}")
