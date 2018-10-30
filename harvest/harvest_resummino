@@ -99,7 +99,7 @@ get_hr_pname(){
 # Main function
 run(){
 
-    get_inputdir "${@}"
+    get_inputdir "${1}"
 
     # Retrieve information from directory name
     dir="${inputdir##*/}"
@@ -189,4 +189,9 @@ run(){
     done
 }
 
-run "${@}"
+# Run script for every positional argument
+for logs; do
+    run "${logs}"
+done
+
+#run "${@}"
