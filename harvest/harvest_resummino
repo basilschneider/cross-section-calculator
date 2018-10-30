@@ -151,7 +151,7 @@ run(){
         # Get cross sections (LO, NLO and NLO+NNLL)
         # Since sed exits, there is no-one reading the piped output of tac anymore
         # and tac will return exit code 141 (SIGPIPE); we don't want that to stop
-        # the program, though
+        # the program, though, so we turn off pipefail for a moment
         set +o pipefail
         lo_log="$(tac "${log}" | sed -n '5{p;q}')"
         nlo_log="$(tac "${log}" | sed -n '4{p;q}')"
