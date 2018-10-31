@@ -317,10 +317,13 @@ combine(){
         # Check if mass is already present in combined arrays
         local idx=$(return_index "${mass}" "${masses_combined[@]}")
         if [ ${idx} -eq -1 ]; then
+            # n_combined counts the number of different contributions
+            n_combined+=(1)
             masses_combined+=("${mass}")
             nlonnlls_combined+=("${nlonnll}")
             nlonnll_errs_combined+=("${nlonnll_err}")
         else
+            (( n_combined[$idx]++ ))
             # The weird $() (with the new line inside the parenthesis) is to
             # keep the line within the 80 characters limit
             nlonnlls_combined[$idx]=$(
@@ -329,6 +332,12 @@ combine(){
             )$(add_float "${nlonnll_errs_combined[$idx]}" "${nlonnll_err}")
         fi
     done
+
+    ## Print content of combined arrays (for debugging)
+    #echo "Length and content of n_combined: ${#n_combined[@]} - ${n_combined[@]}"
+    #echo "Length and content of masses_combined: ${#masses_combined[@]} - ${masses_combined[@]}"
+    #echo "Length and content of nlonnlls_combined: ${#nlonnlls_combined[@]} - ${nlonnlls_combined[@]}"
+    #echo "Length and content of nlonnll_errs_combined: ${#nlonnll_errs_combined[@]} - ${nlonnll_errs_combined[@]}"
 
     # Now loop over the new arrays and make a table entry for each element
     for (( i=0; i<${#masses_combined[@]}; i++ )); do
