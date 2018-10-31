@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# Submit all relevant cross sections
+
+coms=(13 14 27)
+slhas=(hino.in wino.in)
+for com in "${coms[@]}"; do
+    for slha in "${slhas[@]}"; do
+        ./condor_resummino_submit -s "${slha}" -e "${com}" -p "1000023 1000024"  -m "$(echo {50..2000..25})"
+        ./condor_resummino_submit -s "${slha}" -e "${com}" -p "1000023 -1000024" -m "$(echo {50..2000..25})"
+        ./condor_resummino_submit -s "${slha}" -e "${com}" -p "1000024 -1000024" -m "$(echo {50..2000..25})"
+        ./condor_resummino_submit -s "${slha}" -e "${com}" -p "1000022 1000023"  -m "$(echo {50..2000..25})"
+    done
+done
