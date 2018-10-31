@@ -23,7 +23,6 @@ p_good=(1000022 1000023 1000024 -1000024)
 err=false
 
 # Names
-name_tarball=tarball_resummino.tar.gz
 name_submission_script=condor_resummino_submission
 
 # External tarballs
@@ -56,11 +55,8 @@ contains_element () {
 }
 
 makeTarball(){
-    # Delete old tarball
-    rm -f "${name_tarball}"
-
     # Create new tarball
-    echo -n "Create tarball with input files... "
+    echo -n "Create tarball ${name_tarball} with input files... "
     tar czf "${name_tarball}" resummino.in hino.in wino.in
     if [ $? -ne 0 ]; then
         echo "Exit"
@@ -176,6 +172,11 @@ parseOptions(){
         echo "Exit."
         exit 2
     fi
+
+    # Set the unique name of the tarball
+    # This is needed in order to quickly send different jobs, without
+    # overwriting the respective tarballs
+    name_tarball=tarball_resummino_$(date +%s%3N).tar.gz
 
     makeTarball
     prepare
