@@ -5,21 +5,12 @@ set -e -o pipefail
 # Compile output from Resummino into a Twiki friendly format and produce a plot
 
 # TODO: Make plot with cross sections.
-# TODO: Think about how to combine C1+N2 and C1-N2, but also all hino processes.
-# TODO: Currently one log file per positional parameter is generated, these
-#       should be combined.
 # TODO: Give the user some control over verbosity of this script.
 # TODO: When combining several log files, the mass is used as index. It is not
 #       checked if the cross sections with the same mass are indeed from
 #       different log files, as they should be. In any case, this scenario is
 #       highly unlikely and involves a botched calculation of the cross sections
 #       in the first place.
-# TODO: Combined output is not ordered by mass.
-# TODO: When you combine different cross sections, you need to make sure that
-#       *every* cross section is combined. You don't want to combine masses
-#       (100 125 150) with (100 150), since this would give an uncombined value
-#       for 125. (Fixing this TODO, should also fix the other TODO that claims
-#       that the combined output is not ordered by mass.)
 
 # Use echo to output to stderr
 errcho(){
