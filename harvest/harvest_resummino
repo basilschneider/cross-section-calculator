@@ -6,6 +6,8 @@ set -e -o pipefail
 
 # TODO: Make plot with cross sections
 # TODO: Think about how to combine C1+N2 and C1-N2, but also all hino processes
+# TODO: Currently one log file per positional parameter is generated, these
+# should be combined
 
 # Use echo to output to stderr
 errcho(){
@@ -72,11 +74,11 @@ round_values_5(){
 # Get human readable version of the model
 get_hr_slha(){
     if [ "${slha}" == wino ]; then
-        slha_hr=Wino
+        echo Wino
     elif [ "${slha}" == hino ]; then
-        slha_hr=Higgsino
+        echo Higgsino
     else
-        slha_hr="${slha}"
+        echo "${slha}"
     fi
 }
 
@@ -120,7 +122,7 @@ run(){
     rm -f "${twikilog}"
 
     # Make variables human readable for the Twiki page
-    get_hr_slha
+    local slha_hr=$(get_hr_slha)
     local p1_hr=$(get_hr_pname "${p1}")
     local p2_hr=$(get_hr_pname "${p2}")
 
@@ -197,9 +199,59 @@ run(){
     done
 }
 
+# Check that all elements are the same
+check_elements_same(){
+    local dscrptn="${1}"
+    shift
+    local element
+    for element; do
+        # Compare old_element with element; if old_element is not set,
+        # substitute with element and the comparison is trivially true
+        if [ "${old_element-${element}}" != "${element}" ]; then
+            echo -n "You try to combine different ${dscrptn}, which does not "
+            echo -n "make much sense. Offending values are: "
+            echo "${old_element} / ${element}"
+            echo "Exit."
+            exit 3
+        fi
+        local old_element="${element}"
+    done
+}
+
+# Combine all separate log files
+combine(){
+
+    # Combined Twiki log
+    twikilog=resummino_combined.log
+
+    # Remove combined Twiki log file
+    rm -f "${twikilog}"
+
+    # Check that all elements in these arrays are the same, it does not make
+    # much sense to combine cross sections for e.g. sqrt(s) of 13 and 14 TeV or
+    # for winos and higgsinos
+    check_elements_same "center of masses" "${coms[@]}"
+    check_elements_same "particle types" "${slha_hrs[@]}"
+
+    # Title for Twiki page, loop over all particle combination
+    twikilog -n "---+++ NLO+NNLL ${slha_hrs[0]} cross sections for combined"
+    for (( i=0; i<${#p1_hrs[*]}; i++ )); do
+        twikilog -n "${and}${p1_hrs[$i]}${p2_hrs[$i]}"
+        local and="and "
+    done
+    twikilog "production at sqrt(s) = ${coms[0]} !TeV"
+    twikilog
+
+    for log in "${twikilogs[@]}"; do
+        twikilog COMBINE
+        twikilog "${log}"
+    done
+}
+
 # Run script for every positional argument
 for logs; do
     run "${logs}"
 done
 
-#run "${@}"
+# Combine each log file
+combine
