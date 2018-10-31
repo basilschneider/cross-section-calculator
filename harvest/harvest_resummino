@@ -4,11 +4,22 @@ set -e -o pipefail
 
 # Compile output from Resummino into a Twiki friendly format and produce a plot
 
-# TODO: Make plot with cross sections
-# TODO: Think about how to combine C1+N2 and C1-N2, but also all hino processes
+# TODO: Make plot with cross sections.
+# TODO: Think about how to combine C1+N2 and C1-N2, but also all hino processes.
 # TODO: Currently one log file per positional parameter is generated, these
-#       should be combined
-# TODO: Give the user some control over verbosity of this script
+#       should be combined.
+# TODO: Give the user some control over verbosity of this script.
+# TODO: When combining several log files, the mass is used as index. It is not
+#       checked if the cross sections with the same mass are indeed from
+#       different log files, as they should be. In any case, this scenario is
+#       highly unlikely and involves a botched calculation of the cross sections
+#       in the first place.
+# TODO: Combined output is not ordered by mass.
+# TODO: When you combine different cross sections, you need to make sure that
+#       *every* cross section is combined. You don't want to combine masses
+#       (100 125 150) with (100 150), since this would give an uncombined value
+#       for 125. (Fixing this TODO, should also fix the other TODO that claims
+#       that the combined output is not ordered by mass.)
 
 # Use echo to output to stderr
 errcho(){
@@ -72,6 +83,11 @@ round_values_5(){
     awk '{printf("%.5g\n", 1000*$0)}' <<< "${value}"
 }
 
+# Add two floating numbers
+add_float(){
+    awk '{print($1+$2)}' <<< "${1} ${2}"
+}
+
 # Get human readable version of the model
 get_hr_slha(){
     if [ "${slha}" == wino ]; then
@@ -100,7 +116,7 @@ get_hr_pname(){
 }
 
 # Add table properties to Twiki log file
-add_table_props(){
+table_props(){
     # Table properties
     twikilog -n '%TABLE{ tableborder="0" cellpadding="4" cellspacing="3"'
     twikilog -n 'cellborder="1" headerrows="1" columnwidths="80, 125, 125"'
@@ -111,7 +127,7 @@ add_table_props(){
 }
 
 # Add table header row to Twiki log file
-add_table_header(){
+table_header(){
     # Table header row
     twikilog -n " | *m<sub>&#967;&#771;</sub> [GeV]* | *&sigma; [fb]*"
     twikilog " | *uncertainty [fb]* |"
@@ -163,8 +179,8 @@ run(){
     twikilog "${p1_hr}${p2_hr} production at sqrt(s) = ${com} !TeV"
     twikilog
 
-    add_table_props
-    add_table_header
+    table_props
+    table_header
 
     for log in "${inputdir}"/*; do
 
@@ -205,6 +221,11 @@ run(){
         nlonnll=$(round_values_5 "${nlonnll}")
         nlonnll_err=$(round_values_4 "${nlonnll_err}")
 
+        # Store results for later combination
+        masses+=("${mass}")
+        nlonnlls+=("${nlonnll}")
+        nlonnll_errs+=("${nlonnll_err}")
+
         # Output results
         echo "LO:       ${lo} +/- ${lo_err}"
         echo "NLO:      ${nlo} +/- ${nlo_err}"
@@ -233,6 +254,27 @@ check_elements_same(){
     done
 }
 
+# Check if element is already in array and return its index
+return_index(){
+    # If element (${1}) is found in array (${2} to ${n}), return its index in
+    # the array, otherwise return -1
+    local element="${1}"
+    shift
+    # Return value
+    local ret=-1
+    local idx=0
+    local x
+    for x; do
+        # If we found the element, idx is the right index and we can break
+        if [ "${x}" == "${element}" ]; then
+            ret="${idx}"
+            break
+        fi
+        (( idx++ ))
+    done
+    echo "${ret}"
+}
+
 # Combine all separate log files
 combine(){
 
@@ -250,19 +292,41 @@ combine(){
 
     # Title for Twiki page, loop over all particle combination
     twikilog -n "---+++ NLO+NNLL ${slha_hrs[0]} cross sections for combined"
-    for (( i=0; i<${#p1_hrs[*]}; i++ )); do
+    for (( i=0; i<${#p1_hrs[@]}; i++ )); do
         twikilog -n "${and}${p1_hrs[$i]}${p2_hrs[$i]}"
         local and="and "
     done
     twikilog "production at sqrt(s) = ${coms[0]} !TeV"
     twikilog
 
-    add_table_props
-    add_table_header
+    table_props
+    table_header
 
-    for log in "${twikilogs[@]}"; do
-        twikilog COMBINE
-        twikilog "${log}"
+    # Loop over arrays and combine the values from the old arrays into new
+    # arrays; there are two cases to distinguish, depending if the mass (which
+    # serves as an "index") in the original array is found in the new array:
+    # a) if the mass is not found, we create new entries for all new arrays
+    # b) if the mass is found, we add the cross section (linearly) and the
+    #    uncertainty (linearly) to the existing values
+    for (( i=0; i<${#masses[@]}; i++ )); do
+        local mass="${masses[$i]}"
+        local nlonnll="${nlonnlls[$i]}"
+        local nlonnll_err="${nlonnll_errs[$i]}"
+        # Check if mass is already present in combined arrays
+        local idx=$(return_index "${mass}" "${masses_combined[@]}")
+        if [ ${idx} -eq -1 ]; then
+            masses_combined+=("${mass}")
+            nlonnlls_combined+=("${nlonnll}")
+            nlonnll_errs_combined+=("${nlonnll_err}")
+        else
+            nlonnlls_combined[$idx]=$(add_float "${nlonnlls_combined[$idx]}" "${nlonnll}")
+            nlonnll_errs_combined[$idx]=$(add_float "${nlonnll_errs_combined[$idx]}" "${nlonnll_err}")
+        fi
+    done
+
+    # Now loop over the new arrays and make a table entry for each element
+    for (( i=0; i<${#masses_combined[@]}; i++ )); do
+        table_entry "${masses_combined[$i]}" "${nlonnlls_combined[$i]}" "${nlonnll_errs_combined[$i]}"
     done
 }
 
