@@ -99,6 +99,24 @@ get_hr_pname(){
     fi
 }
 
+# Add table properties to Twiki log file
+add_table_props(){
+    # Table properties
+    twikilog -n '%TABLE{ tableborder="0" cellpadding="4" cellspacing="3"'
+    twikilog -n 'cellborder="1" headerrows="1" columnwidths="80, 125, 125"'
+    twikilog -n 'headeralign="center" dataalign="right" headercolor="#FFFFFF"'
+    twikilog -n 'headerbg="#437B58" databg="#A1C2B1, #CFDFD5"'
+    twikilog 'datacolor="#000000"}%'
+    twikilog
+}
+
+# Add table header row to Twiki log file
+add_table_header(){
+    # Table header row
+    twikilog -n " | *m<sub>&#967;&#771;</sub> [GeV]* | *&sigma; [fb]*"
+    twikilog " | *uncertainty [fb]* |"
+}
+
 # Create one log file per positional argument
 run(){
 
@@ -140,17 +158,8 @@ run(){
     twikilog "${p1_hr}${p2_hr} production at sqrt(s) = ${com} !TeV"
     twikilog
 
-    # Table properties
-    twikilog -n '%TABLE{ tableborder="0" cellpadding="4" cellspacing="3"'
-    twikilog -n 'cellborder="1" headerrows="1" columnwidths="80, 125, 125"'
-    twikilog -n 'headeralign="center" dataalign="right" headercolor="#FFFFFF"'
-    twikilog -n 'headerbg="#437B58" databg="#A1C2B1, #CFDFD5"'
-    twikilog 'datacolor="#000000"}%'
-    twikilog
-
-    # Table header row
-    twikilog -n " | *m<sub>&#967;&#771;</sub> [GeV]* | *&sigma; [fb]*"
-    twikilog " | *uncertainty [fb]* |"
+    add_table_props
+    add_table_header
 
     for log in "${inputdir}"/*; do
 
@@ -242,6 +251,9 @@ combine(){
     done
     twikilog "production at sqrt(s) = ${coms[0]} !TeV"
     twikilog
+
+    add_table_props
+    add_table_header
 
     for log in "${twikilogs[@]}"; do
         twikilog COMBINE
