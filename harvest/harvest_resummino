@@ -7,7 +7,8 @@ set -e -o pipefail
 # TODO: Make plot with cross sections
 # TODO: Think about how to combine C1+N2 and C1-N2, but also all hino processes
 # TODO: Currently one log file per positional parameter is generated, these
-# should be combined
+#       should be combined
+# TODO: Give the user some control over verbosity of this script
 
 # Use echo to output to stderr
 errcho(){
