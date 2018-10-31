@@ -253,5 +253,7 @@ for logs; do
     run "${logs}"
 done
 
-# Combine each log file
-combine
+# Combine all log files, if there is more than one
+if [ $# -gt 1 ]; then
+    combine
+fi
