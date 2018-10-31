@@ -190,9 +190,9 @@ run(){
         mass="${mass%.log}"
 
         # Get cross sections (LO, NLO and NLO+NNLL)
-        # Since sed exits, there is no-one reading the piped output of tac anymore
-        # and tac will return exit code 141 (SIGPIPE); we don't want that to stop
-        # the program, though, so we turn off pipefail for a moment
+        # Since sed exits, there is no-one reading the piped output of tac
+        # anymore and tac will return exit code 141 (SIGPIPE); we don't want
+        # that to stop the program, though, so we turn off pipefail for a moment
         set +o pipefail
         local lo_log="$(tac "${log}" | sed -n '5{p;q}')"
         local nlo_log="$(tac "${log}" | sed -n '4{p;q}')"
@@ -319,14 +319,19 @@ combine(){
             nlonnlls_combined+=("${nlonnll}")
             nlonnll_errs_combined+=("${nlonnll_err}")
         else
-            nlonnlls_combined[$idx]=$(add_float "${nlonnlls_combined[$idx]}" "${nlonnll}")
-            nlonnll_errs_combined[$idx]=$(add_float "${nlonnll_errs_combined[$idx]}" "${nlonnll_err}")
+            # The weird $() (with the new line inside the parenthesis) is to
+            # keep the line within the 80 characters limit
+            nlonnlls_combined[$idx]=$(
+            )$(add_float "${nlonnlls_combined[$idx]}" "${nlonnll}")
+            nlonnll_errs_combined[$idx]=$(
+            )$(add_float "${nlonnll_errs_combined[$idx]}" "${nlonnll_err}")
         fi
     done
 
     # Now loop over the new arrays and make a table entry for each element
     for (( i=0; i<${#masses_combined[@]}; i++ )); do
-        table_entry "${masses_combined[$i]}" "${nlonnlls_combined[$i]}" "${nlonnll_errs_combined[$i]}"
+        table_entry "${masses_combined[$i]}" "${nlonnlls_combined[$i]}" \
+            "${nlonnll_errs_combined[$i]}"
     done
 }
 
