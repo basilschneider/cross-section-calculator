@@ -317,13 +317,14 @@ combine(){
         # Check if mass is already present in combined arrays
         local idx=$(return_index "${mass}" "${masses_combined[@]}")
         if [ ${idx} -eq -1 ]; then
-            # n_combined counts the number of different contributions
-            n_combined+=(1)
+            # contributions_combined counts the number of different
+            # contributions
+            contributions_combined+=(1)
             masses_combined+=("${mass}")
             nlonnlls_combined+=("${nlonnll}")
             nlonnll_errs_combined+=("${nlonnll_err}")
         else
-            (( n_combined[$idx]++ ))
+            (( contributions_combined[$idx]++ ))
             # The weird $() (with the new line inside the parenthesis) is to
             # keep the line within the 80 characters limit
             nlonnlls_combined[$idx]=$(
@@ -334,17 +335,37 @@ combine(){
     done
 
     ## Print content of combined arrays (for debugging)
-    #echo "Length and content of n_combined: ${#n_combined[@]} - ${n_combined[@]}"
-    #echo "Length and content of masses_combined: ${#masses_combined[@]} - ${masses_combined[@]}"
-    #echo "Length and content of nlonnlls_combined: ${#nlonnlls_combined[@]} - ${nlonnlls_combined[@]}"
-    #echo "Length and content of nlonnll_errs_combined: ${#nlonnll_errs_combined[@]} - ${nlonnll_errs_combined[@]}"
+    #echo -n "Length and content of contributions_combined: "
+    #echo "${#contributions_combined[@]} - ${contributions_combined[@]}"
+    #echo -n "Length and content of masses_combined: "
+    #echo "${#masses_combined[@]} - ${masses_combined[@]}"
+    #echo -n "Length and content of nlonnlls_combined: "
+    #echo "${#nlonnlls_combined[@]} - ${nlonnlls_combined[@]}"
+    #echo -n "Length and content of nlonnll_errs_combined: "
+    #echo "${#nlonnll_errs_combined[@]} - ${nlonnll_errs_combined[@]}"
 
     # Now loop over the new arrays and make a table entry for each element
     for (( i=0; i<${#masses_combined[@]}; i++ )); do
+
+        # Check that the given mass point has the same number of contributions as the
+        # number of log files passed to this script.
+        # Why? Because every cross section should be combined. You don't want to
+        # combine e.g. masses (100 125 150) with (100 150), since this would give an
+        # uncombined value for 125.
+        if [ ${contributions_combined[$i]} -ne "${n_input_dirs}" ]; then
+            echo -n "For the mass ${masses_combined[$i]}, there is only "
+            echo -n "${contributions_combined[$i]} contribution, but "
+            echo "${n_input_dirs} log files are given. Skip this point."
+            continue
+        fi
         table_entry "${masses_combined[$i]}" "${nlonnlls_combined[$i]}" \
             "${nlonnll_errs_combined[$i]}"
     done
+
 }
+
+# Store number of input directories (= number of positional arguments)
+n_input_dirs="$#"
 
 # Run script for every positional argument
 for logs; do
@@ -352,6 +373,6 @@ for logs; do
 done
 
 # Combine all log files, if there is more than one
-if [ $# -gt 1 ]; then
+if [ "${n_input_dirs}" -gt 1 ]; then
     combine
 fi
