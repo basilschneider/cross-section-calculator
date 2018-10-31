@@ -303,11 +303,13 @@ combine(){
     table_header
 
     # Loop over arrays and combine the values from the old arrays into new
-    # arrays; there are two cases to distinguish, depending if the mass (which
-    # serves as an "index") in the original array is found in the new array:
-    # a) if the mass is not found, we create new entries for all new arrays
+    # arrays, such that the mass is unique in the new arrays; there are two
+    # cases to distinguish, depending if the mass (which serves as an "index")
+    # from the original array is found (or not) in the new array:
+    # a) if the mass is not found, we create new entries in all new arrays
     # b) if the mass is found, we add the cross section (linearly) and the
-    #    uncertainty (linearly) to the existing values
+    #    uncertainty (linearly) to the existing values; the reason why we add
+    #    the uncertainty linearly is, because they are fully correlated
     for (( i=0; i<${#masses[@]}; i++ )); do
         local mass="${masses[$i]}"
         local nlonnll="${nlonnlls[$i]}"
