@@ -316,12 +316,10 @@ combine(){
             nlonnll_errs_combined+=("${nlonnll_err}")
         else
             (( contributions_combined[$idx]++ ))
-            # The weird $() (with the new line inside the parenthesis) is to
-            # keep the line within the 80 characters limit
             nlonnlls_combined[$idx]=$(
-            )$(add_float "${nlonnlls_combined[$idx]}" "${nlonnll}")
+            add_float "${nlonnlls_combined[$idx]}" "${nlonnll}")
             nlonnll_errs_combined[$idx]=$(
-            )$(add_float "${nlonnll_errs_combined[$idx]}" "${nlonnll_err}")
+            add_float "${nlonnll_errs_combined[$idx]}" "${nlonnll_err}")
         fi
     done
 
