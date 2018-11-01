@@ -149,6 +149,11 @@ run(){
     cluster="${cluster##*/}"
     local twikilog="${cluster}_${dir}.log"
 
+    # If not yet done, define combined Twiki log file
+    if [ -z "${combinedlog}" ]; then
+        combinedlog="${twikilog/.log/_combined.log}"
+    fi
+
     # Remove Twiki log file
     rm -f "${twikilog}"
 
@@ -270,7 +275,8 @@ return_index(){
 combine(){
 
     # Combined Twiki log
-    twikilog=resummino_combined.log
+    twikilog="${combinedlog}"
+    unset combinedlog
 
     # Remove combined Twiki log file
     rm -f "${twikilog}"
