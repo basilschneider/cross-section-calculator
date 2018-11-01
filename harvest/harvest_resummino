@@ -126,7 +126,12 @@ table_header(){
 
 # Add an entry in the table in the Twiki log file
 table_entry(){
-    twikilog " | ${1} | ${2} | ${3} |"
+    # Remove the padding 0s for the first positional argument (mass) that have
+    # been added to ensure correct ordering
+    # For this, extglob needs to be set; we will unset it later again
+    shopt -s extglob
+    twikilog " | ${1##+(0)} | ${2} | ${3} |"
+    shopt -u extglob
 }
 
 # Create one log file per positional argument

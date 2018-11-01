@@ -109,6 +109,8 @@ EOF
 
     # For every mass point, create a job
     for m in ${mass}; do
+        # Zero pad masses, so they are ordered correctly when harvesting
+        m=$(printf "%04d" "${m}")
         echo "Arguments = ${slha} ${com} ${p1} ${p2} ${m} \$(Cluster) \$(Process)" >> \
             "${name_submission_script}"
         echo "Queue 1" >> "${name_submission_script}"
