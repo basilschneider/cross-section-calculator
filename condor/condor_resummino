@@ -125,7 +125,20 @@ echo -e "Done.\n"
 echo -n "Copy output to eos... "
 mkdir -p "${outdir}"
 mv "${outfile}" "${outdir}"
-xrdfs root://cmseos.fnal.gov/ mkdir -p "${eosoutdir}"
+
+# Since mkdir on eos often fails for no obvious reason, brute force the mkdir
+for i in {1..10}; do
+    if xrdfs root://cmseos.fnal.gov/ mkdir -p "${eosoutdir}"; then
+        break
+    else
+        echo "xrdfs mkdir try ${i} for directory ${eosoutdir} failed."
+        if [ "${i}" -eq 10 ]; then
+            echo "Give up."
+            exit 2
+        fi
+    fi
+done
+
 # Since copying to eos often fails for no obvious reason, brute force the copy
 for i in {1..10}; do
     if xrdcp -rs "${outdir}" root://cmseos.fnal.gov/"${eosoutdir}"; then
