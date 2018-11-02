@@ -1,8 +1,8 @@
 # CMS SUSY EWK Cross Sections
 
-This package automatizes the process of calculating electroweak SUSY process
-cross sections for the CMS experiment and presenting them in a table that is
-formatted for usage inside a Twiki. It consists of two parts:
+This package automatizes the process of calculating electroweak SUSY cross
+sections for the CMS experiment and presenting them in a table that is formatted
+for usage inside a Twiki. It consists of two parts:
 
 ## Condor
 
@@ -15,19 +15,19 @@ to see all options. A typical job submission looks e.g. like this
 ```bash
 ./condor_resummino_submit -s wino.in -e 13 -p "1000023 1000024" -m "100 200 300"
 ```
-which calculates the cross sections for a wino-like N2C1 model at a
-center-of-mass energy of 13 TeV, for degenerate N2C1 masses of 100, 200 and 300
-GeV.
+which calculates the cross sections for a wino-like N2C1+ model at a
+center-of-mass energy of 13 TeV, for degenerate N2 and C1+ masses of 100, 200
+and 300 GeV.
 
 You can also peek into `submitall` to see how to submit several jobs at once.
 
 Also have a look at the two SLHA files provided, wino.in and hino.in, that
-define the parameters of the model that cannot be controlled by flags.
+define the parameters of the model that cannot be controlled with the script.
 
 The jobs run on HTCondor at the FNAL cluster. It has not been tested on other
-sites, but e.g. CERN or DESY use HTCondor as well. While I don't believe it will
-run out of the box on these sites, there is likely not much work involved to get
-it running there as well.
+sites, but e.g. CERN or DESY use HTCondor as well. While it is unlikely that
+this package will run out of the box on these sites, there is likely not much
+work involved to get it running there as well.
 
 Your job output will be transferred to eos.
 
