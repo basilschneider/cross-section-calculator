@@ -180,8 +180,8 @@ parseOptions(){
     # overwriting the respective tarballs
     name_tarball=tarball_resummino_$(date +%s%3N).tar.gz
 
-    makeTarball
     prepare
+    makeTarball
     submit
 }
 
