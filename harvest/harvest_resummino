@@ -228,9 +228,9 @@ run(){
         nlonnll_errs+=("${nlonnll_err}")
 
         # Output results
-        echo "LO:       ${lo} +/- ${lo_err}"
-        echo "NLO:      ${nlo} +/- ${nlo_err}"
-        echo "NLO+NNLL: ${nlonnll} +/- ${nlonnll_err}"
+        #echo "LO:       ${lo} +/- ${lo_err}"
+        #echo "NLO:      ${nlo} +/- ${nlo_err}"
+        #echo "NLO+NNLL: ${nlonnll} +/- ${nlonnll_err}"
         table_entry "${mass}" "${nlonnll}" "${nlonnll_err}"
 
     done
