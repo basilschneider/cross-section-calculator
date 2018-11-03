@@ -20,7 +20,7 @@ errcho(){
     >&2 echo ${@}
 }
 
-# Output to Twiki log file
+# Output to Twiki file
 twikilog(){
     echo "${@} " >> "${twiki}"
 }
@@ -124,7 +124,7 @@ signature(){
     twikilog
 }
 
-# Add table properties to Twiki log file
+# Add table properties to Twiki file
 table_props(){
     # Table properties
     twikilog -n '%TABLE{ tableborder="0" cellpadding="4" cellspacing="3"'
@@ -135,14 +135,14 @@ table_props(){
     twikilog
 }
 
-# Add table header row to Twiki log file
+# Add table header row to Twiki file
 table_header(){
     # Table header row
     twikilog -n " | *m<sub>&#967;&#771;</sub> [GeV]* | *&sigma; [fb]*"
     twikilog " | *uncertainty [fb]* |"
 }
 
-# Add an entry in the table in the Twiki log file
+# Add an entry in the table in the Twiki file
 table_entry(){
     # Remove the padding 0s for the first positional argument (mass) that have
     # been added to ensure correct ordering
@@ -172,12 +172,12 @@ run(){
     cluster="${cluster##*/}"
     local twiki="${twikidir}/${cluster}_${dir}.twk"
 
-    # If not yet done, define combined Twiki log file
+    # If not yet done, define combined Twiki file
     if [ -z "${combined}" ]; then
         combined="${twiki/.twk/_combined.twk}"
     fi
 
-    # Remove Twiki log file
+    # Remove Twiki file
     rm -f "${twiki}"
 
     # Make variables human readable for the Twiki page
@@ -301,11 +301,11 @@ return_index(){
 # Combine all separate log files
 combine(){
 
-    # Combined Twiki log
+    # Combined Twiki file
     twiki="${combined}"
     unset combined
 
-    # Remove combined Twiki log file
+    # Remove combined Twiki file
     rm -f "${twiki}"
 
     # Check that all elements in these arrays are the same, it does not make
