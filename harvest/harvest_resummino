@@ -12,6 +12,9 @@ set -e -o pipefail
 #       highly unlikely and involves a botched calculation of the cross sections
 #       in the first place.
 
+# Global variables
+twikidir=twikis
+
 # Use echo to output to stderr
 errcho(){
     >&2 echo ${@}
@@ -19,7 +22,7 @@ errcho(){
 
 # Output to Twiki log file
 twikilog(){
-    echo "${@} " >> "${twikilog}"
+    echo "${@} " >> "${twikidir}/${twikilog}"
 }
 
 # Get input directory from positional argument
@@ -363,6 +366,9 @@ combine(){
     done
 
 }
+
+# Create directory for twiki
+mkdir -p "${twikidir}"
 
 # Store number of input directories (= number of positional arguments)
 n_input_dirs="$#"
