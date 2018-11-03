@@ -35,12 +35,14 @@ get_inputdir(){
         exit 1
     fi
 
-    inputdir="${1}"
+    local inputdir="${1}"
 
     # Remove all trailing slashes from inputdir
     while [[ "${inputdir: -1}" == / ]]; do
         inputdir="${inputdir%/}"
     done
+
+    echo "${inputdir}"
 }
 
 # Make sure that you pick up the right cross section
@@ -140,7 +142,7 @@ table_entry(){
 # Create one log file per positional argument
 run(){
 
-    get_inputdir "${1}"
+    local inputdir=$(get_inputdir "${1}")
 
     # Retrieve information from directory name
     local dir="${inputdir##*/}"
