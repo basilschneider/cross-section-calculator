@@ -111,6 +111,19 @@ get_hr_pname(){
     fi
 }
 
+# Signature as HTML comment on Twiki to retrace source of values
+signature(){
+    twikilog "<!--"
+    twikilog "    Cross section table generated with Cross Section Calculator"
+    twikilog "    https://github.com/basilschneider/cross-section-calculator"
+    for inputdir; do
+        twikilog "    Input directory: ${inputdir}"
+    done
+    twikilog "    Date: $(date +%d-%m-%Y" "%H:%M:%S)"
+    twikilog "-->"
+    twikilog
+}
+
 # Add table properties to Twiki log file
 table_props(){
     # Table properties
@@ -179,6 +192,10 @@ run(){
     p2_hrs+=("${p2_hr}")
     slha_hrs+=("${slha_hr}")
     coms+=("${com}")
+    inputdirs+=("${inputdir}")
+
+    # Add signature
+    signature "${inputdir}"
 
     # Title for Twiki page
     twikilog -n "---+++ NLO+NNLL ${slha_hr} cross sections for"
@@ -296,6 +313,9 @@ combine(){
     # for winos and higgsinos
     check_elements_same "center of masses" "${coms[@]}"
     check_elements_same "particle types" "${slha_hrs[@]}"
+
+    # Add signature
+    signature "${inputdirs[@]}"
 
     # Title for Twiki page, loop over all particle combination
     twikilog -n "---+++ NLO+NNLL ${slha_hrs[0]} cross sections for combined"
