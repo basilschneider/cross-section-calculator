@@ -170,11 +170,11 @@ run(){
     p2="${p2/m/-}"
     local cluster="${inputdir%/*}"
     cluster="${cluster##*/}"
-    local twiki="${twikidir}/${cluster}_${dir}.twiki"
+    local twiki="${twikidir}/${cluster}_${dir}.twk"
 
     # If not yet done, define combined Twiki log file
     if [ -z "${combined}" ]; then
-        combined="${twiki/.twiki/_combined.twiki}"
+        combined="${twiki/.twk/_combined.twk}"
     fi
 
     # Remove Twiki log file
