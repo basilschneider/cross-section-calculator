@@ -14,6 +14,7 @@ set -e -o pipefail
 
 # Global variables
 twikidir=twikis
+textdir=tables
 
 # Use echo to output to stderr
 errcho(){
@@ -111,6 +112,17 @@ get_hr_pname(){
     fi
 }
 
+# Input: Twiki file name; output: text file name
+get_textfile(){
+    local textfile="${1}"
+    # Rename directory
+    textfile="${textfile/${twikidir}/${textdir}}"
+    # Rename file extension
+    textfile="${textfile/.twk/.txt}"
+    echo "${textfile}"
+}
+
+
 # Signature as HTML comment on Twiki to retrace source of values
 signature(){
     twikilog "<!--"
@@ -152,6 +164,16 @@ table_entry(){
     shopt -u extglob
 }
 
+# Add an entry in the text file
+text_entry(){
+    # Remove the padding 0s for the first positional argument (mass) that have
+    # been added to ensure correct ordering
+    # For this, extglob needs to be set; we will unset it later again
+    shopt -s extglob
+    printf "%5s  %8s  %8s\n" "${1##+(0)}" "${2}" "${3}" >> "${textfile}"
+    shopt -u extglob
+}
+
 # Create one log file per positional argument
 run(){
 
@@ -171,14 +193,16 @@ run(){
     local cluster="${inputdir%/*}"
     cluster="${cluster##*/}"
     local twikifile="${twikidir}/${cluster}_${dir}.twk"
+    local textfile="$(get_textfile "${twikifile}")"
 
     # If not yet done, define combined Twiki file
     if [ -z "${combined}" ]; then
         combined="${twikifile/.twk/_combined.twk}"
     fi
 
-    # Remove Twiki file
+    # Remove output file
     rm -f "${twikifile}"
+    rm -f "${textfile}"
 
     # Make variables human readable for the Twiki page
     local slha_hr=$(get_hr_slha)
@@ -254,6 +278,7 @@ run(){
         #echo "NLO:      ${nlo} +/- ${nlo_err}"
         #echo "NLO+NNLL: ${nlonnll} +/- ${nlonnll_err}"
         table_entry "${mass}" "${nlonnll}" "${nlonnll_err}"
+        text_entry "${mass}" "${nlonnll}" "${nlonnll_err}"
 
     done
 }
@@ -301,8 +326,9 @@ return_index(){
 # Combine all separate log files
 combine(){
 
-    # Combined Twiki file
-    twikifile="${combined}"
+    # Set output files
+    local twikifile="${combined}"
+    local textfile="$(get_textfile "${twikifile}")"
     unset combined
 
     # Remove combined Twiki file
@@ -385,12 +411,15 @@ combine(){
         fi
         table_entry "${masses_combined[$i]}" "${nlonnlls_combined[$i]}" \
             "${nlonnll_errs_combined[$i]}"
+        text_entry "${masses_combined[$i]}" "${nlonnlls_combined[$i]}" \
+            "${nlonnll_errs_combined[$i]}"
     done
 
 }
 
 # Create directory for Twiki
 mkdir -p "${twikidir}"
+mkdir -p "${textdir}"
 
 # Store number of input directories (= number of positional arguments)
 n_input_dirs="$#"
