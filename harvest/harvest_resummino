@@ -22,7 +22,7 @@ errcho(){
 
 # Output to Twiki log file
 twikilog(){
-    echo "${@} " >> "${twikidir}/${twikilog}"
+    echo "${@} " >> "${twiki}"
 }
 
 # Get input directory from positional argument
@@ -155,15 +155,15 @@ run(){
     p2="${p2/m/-}"
     local cluster="${inputdir%/*}"
     cluster="${cluster##*/}"
-    local twikilog="${cluster}_${dir}.log"
+    local twiki="${twikidir}/${cluster}_${dir}.twiki"
 
     # If not yet done, define combined Twiki log file
-    if [ -z "${combinedlog}" ]; then
-        combinedlog="${twikilog/.log/_combined.log}"
+    if [ -z "${combined}" ]; then
+        combined="${twiki/.twiki/_combined.twiki}"
     fi
 
     # Remove Twiki log file
-    rm -f "${twikilog}"
+    rm -f "${twiki}"
 
     # Make variables human readable for the Twiki page
     local slha_hr=$(get_hr_slha)
@@ -172,7 +172,7 @@ run(){
 
     # Collect various variables in arrays to access them later again for the
     # combination of the log files
-    twikilogs+=("${twikilog}")
+    twikis+=("${twiki}")
     p1_hrs+=("${p1_hr}")
     p2_hrs+=("${p2_hr}")
     slha_hrs+=("${slha_hr}")
@@ -283,11 +283,11 @@ return_index(){
 combine(){
 
     # Combined Twiki log
-    twikilog="${combinedlog}"
-    unset combinedlog
+    twiki="${combined}"
+    unset combined
 
     # Remove combined Twiki log file
-    rm -f "${twikilog}"
+    rm -f "${twiki}"
 
     # Check that all elements in these arrays are the same, it does not make
     # much sense to combine cross sections for e.g. sqrt(s) of 13 and 14 TeV or
