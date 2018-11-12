@@ -28,14 +28,6 @@ twikilog(){
 
 # Get input directory from positional argument
 get_inputdir(){
-    # Check that input directory is defined
-    if [ ! -d "${1}" ]; then
-        echo -n "Need path to directory with Resummino logs "
-        echo "as first positional argument."
-        echo "Exit."
-        exit 1
-    fi
-
     local inputdir="${1}"
 
     # Remove all trailing slashes from inputdir
@@ -176,6 +168,14 @@ text_entry(){
 
 # Create one log file per positional argument
 run(){
+
+    # Check that input directory is defined
+    if [ ! -d "${1}" ]; then
+        echo -n "Need path to directory with Resummino logs "
+        echo "as first positional argument."
+        echo "Exit."
+        exit 1
+    fi
 
     local inputdir=$(get_inputdir "${1}")
 
