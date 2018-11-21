@@ -2,7 +2,8 @@
 
 # Condor script to calculate cross sections with Resummino
 
-# TODO: Support more particles, currently only N1, N2 and C1 are supported
+# TODO: Support more particles, currently only N1, N2, C1 and staus are
+#       supported; it would be trivial to also support e.g. lighter sleptons
 # TODO: Support different masses, currently all particles are degenerate
 
 set -e -o pipefail
@@ -107,6 +108,7 @@ echo -e "Done.\n"
 # Modify masses in input file
 echo -n "Modify SLHA file... "
 sed -i \
+    -e "/^ *1000015/c\   1000015     ${m}" \
     -e "/^ *1000022/c\   1000022    -${m}" \
     -e "/^ *1000023/c\   1000023     ${m}" \
     -e "/^ *1000024/c\   1000024     ${m}" "${slha}"
