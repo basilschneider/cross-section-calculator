@@ -53,11 +53,13 @@ plotted with `plot_xs.py`:
     -l "#tilde{#chi}^{0}_{2} #tilde{#chi}^{#pm}_{1}" \
     -l "#tilde{#chi}^{+}_{1} #tilde{#chi}^{-}_{1}" \
     -l "#tilde{#chi}^{0}_{2} #tilde{#chi}^{0}_{1}" \
-    -t "Higgsino cross sections"
+    -t "Higgsino cross sections" \
+    -o "outputname"
 ```
 Tables that are passed with the `-d` (denominator) or `-n` (numerator) flag are
 plotted. If there is a denominator table, a ratio plotted will be added and the
 numerator tables will be divided by the denominator table. The `-l` (legend)
 flag defines the legend entries (denominator table first, if applicable, then
 numerator tables in the order they have been declared). The `-t` (title) flag
-defines the title of the plot.
+defines the title of the plot and the `-o` (output) flag the output name of the
+plot.

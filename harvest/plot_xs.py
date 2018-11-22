@@ -39,6 +39,7 @@ if __name__ == '__main__':
     parser.add_argument('-n', action='append', dest='num', help='Numerator table', default=[])
     parser.add_argument('-l', action='append', dest='leg', help='Legend entry for tables (denominator first)', default=[])
     parser.add_argument('-t', action='store', dest='title', help='Title of histogram', default='')
+    parser.add_argument('-o', action='store', dest='outname', help='Output name of pdf file', default='name')
     args = parser.parse_args()
 
     if (not args.num):
@@ -193,4 +194,5 @@ if __name__ == '__main__':
     for h in h_ratios:
         h.Draw('HIST C {}'.format(same))
         same = 'SAME'
-    c.Print('test.pdf')
+    for ext in ['pdf', 'png']:
+        c.Print('{}.{}'.format(args.outname, ext))
