@@ -119,7 +119,9 @@ echo "Run Resummino... "
 # Even when Resummino fails, we would still like to see the result. Hence we
 # don't want the shell to immediately exit in case of non-zero return value.
 set +e
-./pkg/usr/local/resummino/bin/resummino resummino.in 2>&1 | tee "${outfile}"
+./pkg/usr/local/resummino/bin/resummino resummino.in \
+    --particle1 "${p1}" \
+    --particle2 "${p2}" 2>&1 | tee "${outfile}"
 set -e
 echo -e "Done.\n"
 

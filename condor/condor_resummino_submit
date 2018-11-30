@@ -71,17 +71,11 @@ prepare(){
         resummino.in
     echo "Done."
 
-    echo -n "Set particles to ${p1} and ${p2} in Resummino config... "
-    sed -i \
-        -e "/^particle1/cparticle1 = ${p1}" \
-        -e "/^particle2/cparticle2 = ${p2}" \
-        resummino.in
-    echo "Done."
-
     echo -n "Set input SLHA file to ${slha}... "
     sed -i -e "/^slha/cslha = ${slha}" resummino.in
     echo "Done."
 
+    echo "Particles set to ${p1} and ${p2}."
     echo "Masses set to ${mass}."
 }
 
