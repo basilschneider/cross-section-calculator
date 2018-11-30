@@ -65,7 +65,7 @@ if __name__ == '__main__':
     # Define canvas and sub-pads
     c = ROOT.TCanvas()
     ROOT.gStyle.SetOptStat(0)
-    ROOT.gStyle.SetTitleFontSize(.08)
+    ROOT.gStyle.SetTitleFontSize(.06)
     y_pad = .4 if (args.den) else .1
     p1 = ROOT.TPad("pad1", "pad1", 0., y_pad, 1., 1.)
     p2 = ROOT.TPad("pad2", "pad2", 0., .0, 1., y_pad)
@@ -174,7 +174,7 @@ if __name__ == '__main__':
         pass
 
     # Legend
-    l = ROOT.TLegend(.72, .31, .86, .82)
+    l = ROOT.TLegend(.72, .83-len(hs)*.11, .86, .83)
     l.SetTextAlign(32)
     l.SetTextSize(.07)
     l.SetBorderSize(0)
