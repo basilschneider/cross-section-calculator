@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 
-# Submit all relevant cross sections
+# Submit all relevant cross sections including systematic variations
+# This is a total of 574488 jobs!
 
 coms=(13 14 27)
 slhas=(hino.in wino.in)
 for com in "${coms[@]}"; do
     for slha in "${slhas[@]}"; do
-        ./condor_resummino_submit -s "${slha}" -e "${com}" -p "1000023 1000024"  -m "$(echo {50..2000..25})"
-        ./condor_resummino_submit -s "${slha}" -e "${com}" -p "1000023 -1000024" -m "$(echo {50..2000..25})"
-        ./condor_resummino_submit -s "${slha}" -e "${com}" -p "1000024 -1000024" -m "$(echo {50..2000..25})"
-        ./condor_resummino_submit -s "${slha}" -e "${com}" -p "1000022 1000023"  -m "$(echo {50..2000..25})"
+        ./condor_resummino_submit -s "${slha}" -e "${com}" -p "1000023 1000024"  -m "$(echo {50..2000..25})" -u "0.5 1.0 2.0" -x all
+        ./condor_resummino_submit -s "${slha}" -e "${com}" -p "1000023 -1000024" -m "$(echo {50..2000..25})" -u "0.5 1.0 2.0" -x all
+        ./condor_resummino_submit -s "${slha}" -e "${com}" -p "1000024 -1000024" -m "$(echo {50..2000..25})" -u "0.5 1.0 2.0" -x all
+        ./condor_resummino_submit -s "${slha}" -e "${com}" -p "1000022 1000023"  -m "$(echo {50..2000..25})" -u "0.5 1.0 2.0" -x all
     done
 done
