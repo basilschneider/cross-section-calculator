@@ -28,8 +28,8 @@ center_of_mass_energy = 13000
 # │ ~g        = 1000021 │                                       │
 # └─────────────────────┴───────────────────────────────────────┘
 #
-particle1 = 1000023
-particle2 = 1000024
+particle1 = IGNORED
+particle2 = IGNORED
 
 # Defines the computation to be performed. Three computations are supported:
 #
@@ -61,8 +61,8 @@ pdfset_nlo = 0
 
 #scale factors 
 # (1.0 is central scale mu = (m1 + m2) / 2)
-mu_f = 1.0
-mu_r = 1.0
+mu_f = IGNORED
+mu_r = IGNORED
 
 # Integration parameters.
 precision = 0.005 # desired precision
