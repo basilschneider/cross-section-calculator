@@ -14,11 +14,12 @@ com="${2}"
 p1="${3}"
 p2="${4}"
 m="${5}"
-cluster="${6}"
-process="${7}"
+mu="${6}"
+cluster="${7}"
+process="${8}"
 
 # Output paths
-outfile="${slha%.*}"_"${com}"TeV_"${p1/-/m}"_"${p2/-/m}"_"${m}".log
+outfile="${slha%.*}"_"${com}"TeV_p"${p1/-/m}"_p"${p2/-/m}"_m"${m}"_u"${mu/./p}".log
 outdir=resummino_c"${cluster}"/"${slha%.*}"_"${com}"TeV_"${p1/-/m}"_"${p2/-/m}"/
 eosoutdir=/eos/uscms/store/user/bschneid/analysis/resummino/"${outdir}"
 configdir=resummino_c"${cluster}"/
@@ -46,6 +47,7 @@ echo "Center of mass energy: ${com}"
 echo "Particle 1: ${p1}"
 echo "Particle 2: ${p2}"
 echo "Mass: ${m}"
+echo "Renormalization and factorization scale factor: ${mu}"
 echo "Output file: ${outfile}"
 echo "Output directory: ${outdir}"
 echo "eos output directory: ${eosoutdir}"
@@ -121,7 +123,10 @@ echo "Run Resummino... "
 set +e
 ./pkg/usr/local/resummino/bin/resummino resummino.in \
     --particle1 "${p1}" \
-    --particle2 "${p2}" 2>&1 | tee "${outfile}"
+    --particle2 "${p2}" \
+    --mu_f "${mu}" \
+    --mu_r "${mu}" \
+    2>&1 | tee "${outfile}"
 set -e
 echo -e "Done.\n"
 

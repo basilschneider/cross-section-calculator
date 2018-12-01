@@ -15,6 +15,7 @@ slha=hino.in
 com=13
 p="1000023 1000024"
 mass="100 200 300"
+mus="1.0"
 
 # Accepted particles
 p_good=(1000022 1000023 1000024 -1000024 1000015 -1000015)
@@ -31,7 +32,8 @@ gsl=gsl-1.13.tar.gz
 
 usage(){
     echo "Submit jobs to calculate cross sections with Resummino."
-    echo "This will generate one job per mass point."
+    echo "This will generate one job per mass point times different"
+    echo "scale factors times different PDF sets."
     echo
     echo "Usage: $(basename $0) [options]"
     echo "where [options] can be"
@@ -41,6 +43,8 @@ usage(){
     echo "  -e n             Center of mass energy in TeV (default: ${com})"
     echo "  -p \"m n\"         PDGIDs of particles (default: ${p})"
     echo "  -m \"x y z\"       List of mass points (default: ${mass})"
+    echo "  -u \"x y z\"       List of renormalization and factorization"
+    echo "                   scale factors (default: ${mus})"
 }
 
 # Check if array contains element "${1}"
@@ -77,6 +81,7 @@ prepare(){
 
     echo "Particles set to ${p1} and ${p2}."
     echo "Masses set to ${mass}."
+    echo "Renormalization and factorization scale factors set to ${mus}."
 }
 
 submit(){
@@ -105,9 +110,12 @@ EOF
     for m in ${mass}; do
         # Zero pad masses, so they are ordered correctly when harvesting
         m=$(printf "%04d" "${m}")
-        echo "Arguments = ${slha} ${com} ${p1} ${p2} ${m} \$(Cluster) \$(Process)" >> \
-            "${name_submission_script}"
-        echo "Queue 1" >> "${name_submission_script}"
+        # For every scale factor, create a job
+        for mu in ${mus}; do
+            echo "Arguments = ${slha} ${com} ${p1} ${p2} ${m} ${mu} \$(Cluster) \$(Process)" >> \
+                "${name_submission_script}"
+            echo "Queue 1" >> "${name_submission_script}"
+        done
     done
     echo "Done."
 
@@ -120,7 +128,7 @@ EOF
 parseOptions(){
 
     OPT=$(getopt \
-        --options hde:p:s:m: \
+        --options hde:p:s:m:u: \
         --name "$0" \
         -- "$@"
     )
@@ -139,6 +147,7 @@ parseOptions(){
             -e) com="${2}"; shift 2;;
             -p) p="${2}"; shift 2;;
             -m) mass="${2}"; shift 2;;
+            -u) mus="${2}"; shift 2;;
             --) shift; break;;
         esac
     done
