@@ -13,11 +13,18 @@ The condor part calculates the cross sections by using
 ```
 to see all options. A typical job submission looks e.g. like this
 ```bash
-./condor_resummino_submit -s wino.in -e 13 -p "1000023 1000024" -m "100 200 300"
+./condor_resummino_submit \
+    -s wino.in \
+    -e 13 \
+    -p "1000023 1000024" \
+    -m "100 200 300" \
+    -u "0.5 1.0 2.0"
+    -x all
 ```
 which calculates the cross sections for a wino-like N2C1+ model at a
-center-of-mass energy of 13 TeV, for degenerate N2 and C1+ masses of 100, 200
-and 300 GeV.
+center-of-mass energy of 13 TeV, for degenerate N2 and C1+ masses of 100, 200,
+and 300 GeV, for mu_f and mu_r of 0.5, 1.0, and 2.0, and for all available PDF
+sets.
 
 You can also peek into `submitall` to see how to submit several jobs at once.
 
