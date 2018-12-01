@@ -15,12 +15,13 @@ p1="${3}"
 p2="${4}"
 m="${5}"
 mu="${6}"
-cluster="${7}"
-process="${8}"
+pdf="${7}"
+cluster="${8}"
+process="${9}"
 
 # Output paths
-outfile="${slha%.*}"_"${com}"TeV_p"${p1/-/m}"_p"${p2/-/m}"_m"${m}"_u"${mu/./p}".log
-outdir=resummino_c"${cluster}"/"${slha%.*}"_"${com}"TeV_"${p1/-/m}"_"${p2/-/m}"/
+outfile="${slha%.*}"_"${com}"TeV_p"${p1/-/m}"_p"${p2/-/m}"_m"${m}"_u"${mu/./p}"_x"${pdf}".log
+outdir=resummino_c"${cluster}"/"${slha%.*}"_"${com}"TeV_p"${p1/-/m}"_p"${p2/-/m}"/
 eosoutdir=/eos/uscms/store/user/bschneid/analysis/resummino/"${outdir}"
 configdir=resummino_c"${cluster}"/
 eosconfigdir=/eos/uscms/store/user/bschneid/analysis/resummino/"${configdir}"
@@ -48,6 +49,7 @@ echo "Particle 1: ${p1}"
 echo "Particle 2: ${p2}"
 echo "Mass: ${m}"
 echo "Renormalization and factorization scale factor: ${mu}"
+echo "PDF set: ${pdf}"
 echo "Output file: ${outfile}"
 echo "Output directory: ${outdir}"
 echo "eos output directory: ${eosoutdir}"
@@ -126,6 +128,8 @@ set +e
     --particle2 "${p2}" \
     --mu_f "${mu}" \
     --mu_r "${mu}" \
+    --pdfset_lo "${pdf}" \
+    --pdfset_nlo "${pdf}" \
     2>&1 | tee "${outfile}"
 set -e
 echo -e "Done.\n"

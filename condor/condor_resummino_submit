@@ -16,9 +16,11 @@ com=13
 p="1000023 1000024"
 mass="100 200 300"
 mus="1.0"
+pdf_w=central
 
-# Accepted particles
+# Accepted values
 p_good=(1000022 1000023 1000024 -1000024 1000015 -1000015)
+pdf_good=(all central)
 
 # Error handling
 err=false
@@ -45,6 +47,7 @@ usage(){
     echo "  -m \"x y z\"       List of mass points (default: ${mass})"
     echo "  -u \"x y z\"       List of renormalization and factorization"
     echo "                   scale factors (default: ${mus})"
+    echo "  -x (all/central) Set PDF sets (default: ${pdf_w})"
 }
 
 # Check if array contains element "${1}"
@@ -82,6 +85,7 @@ prepare(){
     echo "Particles set to ${p1} and ${p2}."
     echo "Masses set to ${mass}."
     echo "Renormalization and factorization scale factors set to ${mus}."
+    echo "PDF sets set to ${pdf_w}."
 }
 
 submit(){
@@ -112,9 +116,12 @@ EOF
         m=$(printf "%04d" "${m}")
         # For every scale factor, create a job
         for mu in ${mus}; do
-            echo "Arguments = ${slha} ${com} ${p1} ${p2} ${m} ${mu} \$(Cluster) \$(Process)" >> \
-                "${name_submission_script}"
-            echo "Queue 1" >> "${name_submission_script}"
+            # For every pdf set, create a job
+            for pdf in ${pdfs}; do
+                echo "Arguments = ${slha} ${com} ${p1} ${p2} ${m} ${mu} ${pdf} \$(Cluster) \$(Process)" >> \
+                    "${name_submission_script}"
+                echo "Queue 1" >> "${name_submission_script}"
+            done
         done
     done
     echo "Done."
@@ -128,7 +135,7 @@ EOF
 parseOptions(){
 
     OPT=$(getopt \
-        --options hde:p:s:m:u: \
+        --options hde:p:s:m:u:x: \
         --name "$0" \
         -- "$@"
     )
@@ -148,6 +155,7 @@ parseOptions(){
             -p) p="${2}"; shift 2;;
             -m) mass="${2}"; shift 2;;
             -u) mus="${2}"; shift 2;;
+            -x) pdf_w="${2}"; shift 2;;
             --) shift; break;;
         esac
     done
@@ -162,6 +170,21 @@ parseOptions(){
     p2="${p#* }"
     unset p
 
+    # Make sure particles are accepted
+    if ! contains_element "${p1}" "${p_good[@]}" || \
+       ! contains_element "${p2}" "${p_good[@]}"; then
+        echo "Particle ${p1} or ${p2} is not accepted."
+        echo "Exit."
+        exit 2
+    fi
+
+    # Make sure PDF sets are accepted
+    if ! contains_element "${pdf_w}" "${pdf_good[@]}"; then
+        echo "PDF set ${pdf_w} is not accepted."
+        echo "Exit."
+        exit 2
+    fi
+
     # Make sure abs(p1) <= abs(p2)
     if [ "${p1#-}" -gt "${p2#-}" ]; then
         p1temp="${p1}"
@@ -170,12 +193,11 @@ parseOptions(){
         unset p1temp
     fi
 
-    # Make sure particles are accepted
-    if ! contains_element "${p1}" "${p_good[@]}" || \
-       ! contains_element "${p2}" "${p_good[@]}"; then
-        echo "Particle ${p1} or ${p2} is not accepted."
-        echo "Exit."
-        exit 2
+    # Set numbers of PDF sets
+    if [ "${pdf_w}" == all ]; then
+        pdfs=$(echo {0..100})
+    else
+        pdfs=0
     fi
 
     # Set the unique name of the tarball
