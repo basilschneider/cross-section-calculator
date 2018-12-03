@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 import argparse
-from sys import exit
+from os import mkdir, path
 from array import array
 import ROOT
 
@@ -174,7 +174,7 @@ if __name__ == '__main__':
         pass
 
     # Legend
-    l = ROOT.TLegend(.72, .83-len(hs)*.11, .86, .83)
+    l = ROOT.TLegend(.69, .83-len(hs)*.11, .86, .83)
     l.SetTextAlign(32)
     l.SetTextSize(.07)
     l.SetBorderSize(0)
@@ -194,5 +194,8 @@ if __name__ == '__main__':
     for h in h_ratios:
         h.Draw('HIST C {}'.format(same))
         same = 'SAME'
+    plotsdir = 'plots'
+    if not path.exists(plotsdir):
+        mkdir(plotsdir)
     for ext in ['pdf', 'png']:
-        c.Print('{}.{}'.format(args.outname, ext))
+        c.Print('{}/{}.{}'.format(plotsdir, args.outname, ext))
