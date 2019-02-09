@@ -1,8 +1,9 @@
 # CMS SUSY EWK Cross Sections
 
 This package automatizes the process of calculating electroweak SUSY cross
-sections for the CMS experiment at the CERN LHC and presenting them in a table
-that is formatted for usage inside a Twiki. It consists of two parts:
+sections for the CMS experiment at the CERN LHC. The cross sections are
+presented in a table that is formatted for usage inside a Twiki. This repository
+consists of two parts:
 
 ## Condor
 
@@ -70,3 +71,17 @@ flag defines the legend entries (denominator table first, if applicable, then
 numerator tables in the order they have been declared). The `-t` (title) flag
 defines the title of the plot and the `-o` (output) flag the output name of the
 plot.
+
+## Backup of results
+
+At the end of Run-2, the existing cross sections were about 10 years old and
+needed to be recalculated. A very large number of jobs need to be run to
+calculate all processes at large mass ranges and possibly different
+center-of-mass energies, especially to calculate the systematic uncertainties
+due to scale variation and PDF. The total number of jobs was 574,488 (see
+`condor/submitall` for a list of all jobs). While the resulting cross sections
+are to be found on a dedicated Twiki, the backup of all job outputs can be found
+on eos:
+```bash
+root://cmseos.fnal.gov//store/user/bschneid/bkp/resummino.tar.gz
+```
